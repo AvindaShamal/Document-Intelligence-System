@@ -1,0 +1,29 @@
+# Django Core
+Django>=4.2,<5.0
+djangorestframework>=3.14
+django-cors-headers>=4.3
+
+# Authentication
+djangorestframework-simplejwt>=5.3
+
+# Database
+psycopg2-binary>=2.9
+
+# Async Tasks
+celery>=5.3
+redis>=5.0
+
+# AI / ML
+easyocr>=1.7
+torch>=2.0
+sentence-transformers>=2.2
+faiss-cpu>=1.7
+
+# File & Text Processing
+pillow>=10.0
+pytesseract>=0.3.10
+pdf2image>=1.16
+
+# Utilities
+python-dotenv>=1.0
+requests>=2.31
