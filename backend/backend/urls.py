@@ -28,5 +28,9 @@ urlpatterns += [
     path("api/auth/login/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
 ]
 
+urlpatterns += [
+    path("api/documents/", include("documents.urls")),
+]
+
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
