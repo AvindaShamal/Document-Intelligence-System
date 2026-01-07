@@ -6,6 +6,7 @@ from .models import Document
 class DocumentAdmin(admin.ModelAdmin):
     list_display = ("id", "owner", "title", "status", "uploaded_at")
     search_fields = (
+        "owner_email",
         "title",
         "id",
     )
