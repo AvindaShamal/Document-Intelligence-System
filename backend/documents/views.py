@@ -7,6 +7,7 @@ from rest_framework.generics import RetrieveAPIView
 from .models import Document
 from .serializers import DocumentSerializer
 from .permissions import IsOwner
+from .tasks import dummy_process_document
 
 
 class DocumentUploadView(APIView):
@@ -15,7 +16,8 @@ class DocumentUploadView(APIView):
     def post(self, request) -> Response:
         serializer = DocumentSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(owner=request.user)
+            document = serializer.save(owner=request.user)
+            dummy_process_document.delay(document.id)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
