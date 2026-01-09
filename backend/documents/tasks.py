@@ -1,13 +1,23 @@
 from celery import shared_task
-import time
+from .models import Document
+from .ocr import extract_text_from_image
 
 
 @shared_task
-def dummy_process_document(document_id) -> str:
-    """
-    A dummy task that simulates processing a document.
-    """
-    print(f"Starting processing document with ID: {document_id}")
-    time.sleep(10)  # Simulate a time-consuming task
-    print(f"Finished processing document with ID: {document_id}")
-    return f"Document {document_id} processed successfully."
+def process_document(document_id):
+    try:
+        document = Document.objects.get(id=document_id)
+        document.status = "PROCESSING"
+        document.save()
+
+        file_path = document.file.path
+        extracted_text = extract_text_from_image(file_path)
+
+        document.extracted_text = extracted_text
+        document.status = "COMPLETED"
+        document.save()
+
+    except Exception as e:
+        document.status = "FAILED"
+        document.save()
+        raise e
