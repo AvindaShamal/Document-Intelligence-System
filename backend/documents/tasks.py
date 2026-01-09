@@ -1,23 +1,37 @@
 from celery import shared_task
 from .models import Document
 from .ocr import extract_text_from_image
+import logging
 
 
-@shared_task
-def process_document(document_id):
+logger = logging.getLogger(__name__)
+
+
+@shared_task(
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_kwargs={"max_retries": 3, "countdown": 5},
+)
+def process_document(self, document_id) -> None:
     try:
         document = Document.objects.get(id=document_id)
-        document.status = "PROCESSING"
-        document.save()
+        document.status = Document.STATUS_PROCESSING
+        document.save(update_fields=["status"])
+
+        logger.info(f"Started processing document ID: {document_id}")
 
         file_path = document.file.path
         extracted_text = extract_text_from_image(file_path)
 
         document.extracted_text = extracted_text
-        document.status = "COMPLETED"
-        document.save()
+        document.status = Document.STATUS_COMPLETED
+        document.save(update_fields=["extracted_text", "status"])
+
+        logger.info(f"Completed processing document ID: {document_id}")
 
     except Exception as e:
-        document.status = "FAILED"
-        document.save()
-        raise e
+        logger.error(f"Failed processing document ID: {document_id} - {str(e)}")
+
+        Document.objects.filter(id=document_id).update(status=Document.STATUS_FAILED)
+        document.save(update_fields=["status"])
+        raise self.retry(exc=e)
