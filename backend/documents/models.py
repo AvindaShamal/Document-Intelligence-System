@@ -22,6 +22,7 @@ class Document(models.Model):
     extracted_text = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="PENDING")
     uploaded_at = models.DateTimeField(auto_now_add=True)
+    embeddings = models.JSONField(blank=True, null=True)
 
     def __str__(self):
         return f"Document {self.id} - {self.title} ({self.status})"
