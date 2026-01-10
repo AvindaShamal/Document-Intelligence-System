@@ -1,6 +1,7 @@
 from celery import shared_task
 from .models import Document
 from .ocr import extract_text_from_image
+from .nlp_utils import clean_text, split_sentences
 import logging
 
 
@@ -21,9 +22,11 @@ def process_document(self, document_id) -> None:
         logger.info(f"Started processing document ID: {document_id}")
 
         file_path = document.file.path
-        extracted_text = extract_text_from_image(file_path)
+        raw_text = extract_text_from_image(file_path)
+        cleaned_text = clean_text(raw_text)
+        sentences = split_sentences(cleaned_text)
 
-        document.extracted_text = extracted_text
+        document.extracted_text = cleaned_text
         document.status = Document.STATUS_COMPLETED
         document.save(update_fields=["extracted_text", "status"])
 
