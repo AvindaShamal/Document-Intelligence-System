@@ -8,6 +8,8 @@ from .models import Document
 from .serializers import DocumentSerializer
 from .permissions import IsOwner
 from .tasks import process_document
+from .embeddings import get_text_embeddings
+from .search import semantic_search
 
 
 class DocumentUploadView(APIView):
@@ -49,3 +51,52 @@ class DocumentStatusView(APIView):
             )
         except Document.DoesNotExist:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+
+
+class SemanticSearchView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request) -> Response:
+        query = request.data.get("query", "").strip()
+
+        if not query:
+            return Response(
+                {"detail": "Query is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            results = []
+
+            documents = Document.objects.filter(
+                owner=request.user, status=Document.STATUS_COMPLETED
+            )
+            if not documents.embeddings:
+                return Response(
+                    {"detail": "Document embeddings not found."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            query_embedding = get_text_embeddings([query])[0]
+            for doc in documents:
+                score = semantic_search(query_embedding, doc.embeddings)
+                results.append(
+                    {
+                        "document_id": doc.id,
+                        "title": doc.title,
+                        "similarity_score": score,
+                    }
+                )
+
+            results.sort(key=lambda x: x["similarity_score"], reverse=True)
+
+            return Response(
+                {"results": results[:5]},
+                status=status.HTTP_200_OK,
+            )
+
+        except Document.DoesNotExist:
+            return Response(
+                {"detail": "Document not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
