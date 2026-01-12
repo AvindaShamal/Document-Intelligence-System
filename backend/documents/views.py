@@ -10,6 +10,7 @@ from .permissions import IsOwner
 from .tasks import process_document
 from .embeddings import get_text_embeddings
 from .search import semantic_search
+from .pagination import StandardResultsPagination
 
 
 class DocumentUploadView(APIView):
@@ -90,10 +91,10 @@ class SemanticSearchView(APIView):
 
             results.sort(key=lambda x: x["similarity_score"], reverse=True)
 
-            return Response(
-                {"results": results[:5]},
-                status=status.HTTP_200_OK,
-            )
+            paginator = StandardResultsPagination()
+            paginated_results = paginator.paginate_queryset(results, request)
+
+            return paginator.get_paginated_response(paginated_results)
 
         except Document.DoesNotExist:
             return Response(
