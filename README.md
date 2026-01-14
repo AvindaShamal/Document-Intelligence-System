@@ -70,13 +70,31 @@ Authentication is enforced using Django REST Framework permissions.
 
 ## 📂 Project Structure
 ```
-backend/
-├── accounts/
-├── documents/
-├── search/
-├── celery.py
-├── settings.py
-├── urls.py
+Document-Intelligence-System
+├── docker-compose.yml
+├── requirements.txt
+├── README.md
+└── backend/
+  ├── manage.py
+  ├── accounts/
+  │   ├── admin.py
+  │   ├── models.py
+  │   ├── serializers.py
+  │   └── views.py
+  ├── documents/
+  │   ├── embeddings.py
+  │   ├── ocr.py
+  │   ├── serializers.py
+  │   └── views.py
+  ├── backend/
+  │   ├── __init__.py
+  │   ├── asgi.py
+  │   ├── celery.py
+  │   ├── settings.py
+  │   ├── urls.py
+  │   └── wsgi.py
+  └── media/
+    └── documents/
 ```
 
 ---
