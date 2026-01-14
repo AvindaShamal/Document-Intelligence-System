@@ -1,18 +1,26 @@
 # AI-Powered Document Intelligence Platform
+## Overview
+This project is an AI-powered Document Intelligence System built using
+**Django, Django REST Framework, Celery,** and **Redis**.
 
-A production-ready backend system built with **Django** and **Machine Learning** to process, analyze, and semantically search documents using OCR and NLP techniques.
+Users can upload documents (images/PDFs), which are processed
+asynchronously using **OCR** and **NLP** techniques. Extracted text is converted
+into semantic embeddings, enabling intelligent search over documents.
+
+Authentication is enforced using Django REST Framework permissions.
+**Users can only access documents they own.**
 
 ---
 
-## 🚀 Features
+## 🚀 Key Features
 
 - Secure user authentication using JWT
 - Document upload (PDF & images)
 - Asynchronous OCR and NLP processing
 - Semantic document search using vector embeddings
 - RESTful APIs built with Django REST Framework
-- Role-based access control
 - Admin dashboard for monitoring tasks
+- Dockerized local deployment
 
 ---
 
@@ -47,22 +55,15 @@ A production-ready backend system built with **Django** and **Machine Learning**
 
 ## 📐 System Architecture
 ```
-Client
-  ↓
-Django REST API
-  ↓
-Authentication (JWT)
-  ↓
-Document Upload
-  ↓
-Celery Worker
-  ├── OCR
-  ├── Text Processing
-  └── Embedding Generation
-  ↓
-PostgreSQL + FAISS
-  ↓
-Semantic Search API
+[ Client ]
+    ↓
+[ Django REAST API ] ------> [ Redis ]
+          ↓                     ↓
+[ Authentication (JWT) ]     [ Celery Worker ]
+          ↓                      |
+[ PostgreSQL Database ]          ├── OCR
+                                 ├── Text Processing                       
+                                 └── Embedding Generation                                
 ```
 
 ---
@@ -88,7 +89,16 @@ backend/
 | POST | /api/auth/login/ | JWT login |
 | POST | /api/documents/upload/ | Upload document |
 | GET | /api/documents/ | List documents |
+| GET | /api/documents/{id}/status/ | Document Status
 | POST | /api/search/ | Semantic search |
+
+*POST /api/documents/upload/*
+
+- Authentication: Required
+- Body: multipart/form-data
+- Fields:
+  - file: document file
+  - title: document title
 
 ---
 
